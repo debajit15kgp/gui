@@ -12,133 +12,73 @@ from krssg_ssl_msgs.msg import point_2d
 from krssg_ssl_msgs.msg import BeliefState
 from krssg_ssl_msgs.msg import gr_Commands
 from krssg_ssl_msgs.msg import gr_Robot_Command
-#from krssg_ssl_msgs.msg import BeliefState
-#from role import  GoToBall, GoToPoint
+
 from multiprocessing import Process
 from kubs import kubs
-#from krssg_ssl_msgs.srv import bsServer
+from krssg_ssl_msgs.srv import bsServer
 from math import atan2,pi
 from utils.functions import *
-pub = rospy.Publisher('/grsim_data',gr_Commands,queue_size=1000)
+
 
 
 main_dir = os.path.split(os.path.abspath(__file__))[0]
 data_dir = os.path.join(main_dir, 'data')
 
 print(os.getcwd())
-rospy.init_node('node',anonymous=False)
-start_time = rospy.Time.now()
-start_time = 1.0*start_time.secs + 1.0*start_time.nsecs/pow(10,9)   
+pygame.init()
+pygame.display.init()
 
-# functions to create our resources
-# def load_image(name, colorkey=None):
-#     fullname = os.path.join(data_dir, name)
-#     try:
-#         image = pygame.image.load(fullname)
-#     except pygame.error:
-#         print('Cannot load image:', fullname)
-#         raise SystemExit(str(geterror()))
-#     image = image.convert()
-#     if colorkey is not None:
-#         if colorkey == -1:
-#             colorkey = image.get_at((0, 0))
-#         image.set_colorkey(colorkey, RLEACCEL)
-#     return image, image.get_rect()
+pygame.font.init()
+
+win = pygame.display.set_mode((800,500))
+win.fill((255, 255, 255))
 
 
 
+def send_command(team, bot_id, v_x,v_y, v_w, kick_power, dribble,speed,chip_power = 0):
 
-
-# # classes for our game objects
-# class Fist(pygame.sprite.Sprite):
-#     """moves a clenched fist on the screen, following the mouse"""
-#     def __init__(self):
-#         pygame.sprite.Sprite.__init__(self) #call Sprite initializer
-#         self.image, self.rect = load_image('b.bmp', -1)
-#         self.punching = 0
-
-#     def update(self):
-#         """move the fist based on the mouse position"""
-#         pos = pygame.mouse.get_pos()
-#         self.rect.midtop = pos
-#         if self.punching:
-#             self.rect.move_ip(5, 10)
-
-#     def punch(self, target):
-#         """returns true if the fist collides with the target"""
-#         if not self.punching:
-#             self.punching = 1
-#             hitbox = self.rect.inflate(-5, -5)
-#             return hitbox.colliderect(target.rect)
-
-#     def unpunch(self):
-#         """called to pull the fist back"""
-#         self.punching = 0
-
-
-# class Chimp(pygame.sprite.Sprite):
-#     """moves a monkey critter across the screen. it can spin the
-#        monkey when it is punched."""
-#     def __init__(self):
-#         pygame.sprite.Sprite.__init__(self)  # call Sprite intializer
-#         self.image, self.rect = load_image('a_1.bmp', -1)
-#         screen = pygame.display.get_surface()
-#         self.area = screen.get_rect()
-#         self.rect.topleft = 10, 10
-#         self.move = 9
-#         self.dizzy = 0
-
-#     def update(self):
-#         """walk or spin, depending on the monkeys state"""
-#         if self.dizzy:
-#             self._spin()
-#         else:
-#             self._walk()
-
-#     def _walk(self):
-#         """move the monkey across the screen, and turn at the ends"""
-#         newpos = self.rect.move((self.move, 0))
-#         if not self.area.contains(newpos):
-#             if self.rect.left < self.area.left or \
-#                     self.rect.right > self.area.right:
-#                 self.move = -self.move
-#                 newpos = self.rect.move((self.move, 0))
-#                 self.image = pygame.transform.flip(self.image, 1, 0)
-#             self.rect = newpos
-
-#     def _spin(self):
-#         """spin the monkey image"""
-#         center = self.rect.center
-#         self.dizzy = self.dizzy + 12
-#         if self.dizzy >= 360:
-#             self.dizzy = 0
-#             self.image = self.original
-#         else:
-#             rotate = pygame.transform.rotate
-#             self.image = rotate(self.original, self.dizzy)
-#         self.rect = self.image.get_rect(center=center)
-
-#     def punched(self):
-#         """this will cause the monkey to start spinning"""
-#         if not self.dizzy:
-#             self.dizzy = 1
-#             self.original = self.image
-
-def send_command(pub, team, bot_id, v_x, v_y, v_w, kick_power, dribble, chip_power = 0):
-	""" 
+	""" ,
 	Publish the command packet
 	team : 'True' if the team is yellow 
 	"""
+	pub = rospy.Publisher('/grsim_data',gr_Commands,queue_size=1000)
 	gr_command = gr_Robot_Command()
 	final_command = gr_Commands()
 	
 	"""
 	Set the command to each bot
 	"""
+	state = None
+	#state=shared.get('state')
+	rospy.wait_for_service('bsServer',)
+	# getState = rospy.ServiceProxy('bsServer',bsServer)
+	# try:
+	# 	state = getState(state)
+	# except rospy.ServiceException, e:
+	# 	print("hello")
+	# if state:
+	# 	#print('lasknfcjscnajnstate',state.stateB.homePos)
+	# 	state=state.stateB
+	# 	kub = kubs.kubs(0,state,pub)
+	# 	kub.update_state(state)
+
+	# 	print(kub.kubs_id)	
+	# 	angle=atan2(state.homePos[0].y,state.homePos[0].x)
+	# 	#sprint('chal ja')
+	# print fa,"-------------------- ",angle
+
+	# v_x=0
+	# #v_y=v*math.cos(fa-angle)/math.cos(fa)
+	# v_y=v
+	if(v_x!=0):
+		v_x+=speed
+	if(v_y!=0):
+		v_y+=speed
+
 	gr_command.id          = bot_id
 	gr_command.wheelsspeed = 0
-	gr_command.veltangent  = v_x/1000
-	gr_command.velnormal   = v_y/1000
+	gr_command.veltangent  = v_x
+	gr_command.velnormal   = v_y
 	gr_command.velangular  = v_w
 	gr_command.kickspeedx  = kick_power
 	gr_command.kickspeedz  = chip_power
@@ -150,102 +90,192 @@ def send_command(pub, team, bot_id, v_x, v_y, v_w, kick_power, dribble, chip_pow
 
 	
 	def debug():
-		"""
-		Log the commands
-		"""
+
 		print 'botid: {}: [{}]\n'.format(bot_id, final_command.timestamp)
 		print 'vel_x: {}\nvel_y: {}\nvel_w: {}\n'.format(v_x, v_y, v_w)
 		print 'kick_power: {}\nchip_power: {}\ndribble_speed:{}\n\n'.format(kick_power, chip_power, dribble)
 	
-	# debug()
+
 	pub.publish(final_command)
 
 
+class button():
+	def __init__(self, color, x,y,width,height, text=''):
+		self.color = color
+		self.x = x
+		self.y = y
+		self.width = width
+		self.height = height
+		self.text = text
+
+	def draw(self,win,outline=None):
+		#Call this method to draw the button on the screen
+		if outline:
+			pygame.draw.rect(win, outline, (self.x-2,self.y-2,self.width+4,self.height+4),0)
+			
+		pygame.draw.rect(win, self.color, (self.x,self.y,self.width,self.height),0)
+		
+		if self.text != '':
+			font = pygame.font.SysFont('comicsans', 30)
+			text = font.render(self.text, 1, (0,0,0))
+			win.blit(text, (self.x + (self.width/2 - text.get_width()/2), self.y + (self.height/2 - text.get_height()/2)))
+
+	def isOver(self, pos):
+		#Pos is the mouse position or a tuple of (x,y) coordinates
+		if pos[0] > self.x and pos[0] < self.x + self.width:
+			if pos[1] > self.y and pos[1] < self.y + self.height:
+				return True
+			
+		return False
+def redrawWindow():
+	win.fill((255,255,255))
+	wButton.draw(win,(0,0,0))
+	sButton.draw(win,(0,0,0))
+	aButton.draw(win,(0,0,0))
+	dButton.draw(win,(0,0,0))
+	upButton.draw(win,(0,0,0))
+	downButton.draw(win,(0,0,0))
+
+
+wButton=button((255,255,0),150,200,80,80,'UP')
+sButton=button((255,255,0),150,300,80,80,'DOWN')
+aButton=button((255,255,0),60,300,80,80,'LEFT')
+dButton=button((255,255,0),240,300,80,80,'RIGHT')
+upButton=button((255,255,0),340,300,130,80,'SPEED UP')
+downButton=button((255,255,0),490,300,145,80,'SPEED DOWN')
+# COLOR_INACTIVE = pygame.Color('lightskyblue3')
+# COLOR_ACTIVE = pygame.Color('dodgerblue2')
+
+class InputBox:
+
+	def __init__(self, x, y, w, h, text=''):
+		self.rect = pygame.Rect(x, y, w, h)
+		self.color = (120,120,120)
+		self.text = text
+		font = pygame.font.SysFont('comicsans', 30)
+		self.txt_surface = font.render(self.text, 1, (0,0,0))
+		self.active = False
+
+	def handle_event(self, event):
+		if event.type == pygame.MOUSEBUTTONDOWN:
+			# If the user clicked on the input_box rect.
+			if self.rect.collidepoint(event.pos):
+				# Toggle the active variable.
+				self.active = not self.active
+			else:
+				self.active = False
+		if event.type == pygame.KEYDOWN:
+			if self.active:
+				if event.key == pygame.K_RETURN:
+					print(self.text)
+					self.text = ''
+				elif event.key == pygame.K_BACKSPACE:
+					self.text = self.text[:-1]
+				else:
+					self.text += event.unicode
+				# Re-render the text.
+				self.txt_surface = FONT.render(self.text, True, self.color)
+
+	def update(self):
+		# Resize the box if the text is too long.
+		width = max(200, self.txt_surface.get_width()+10)
+		self.rect.w = width
+
+	def draw(self, screen):
+		# Blit the text.
+		screen.blit(self.txt_surface, (self.rect.x+5, self.rect.y+5))
+		# Blit the rect.
+		pygame.draw.rect(screen, self.color, self.rect, 2)
+
+
 def main():
+	rospy.init_node('node',anonymous=False)
+	start_time = rospy.Time.now()
+	start_time = 1.0*start_time.secs + 1.0*start_time.nsecs/pow(10,9)   
+	
 	power=False
-	vx=0
+	vx=0.5
 	vy=0
 	vw=0
-	pygame.display.init()
-	pygame.font.init()
-	screen = pygame.display.set_mode((500, 500))
-	pygame.display.set_caption('Monkey Fever')
-	pygame.mouse.set_visible(0)
+	s=0
 
-	# Create The Backgound
-	background = pygame.Surface(screen.get_size())
-	background = background.convert()
-	background.fill((250, 250, 250))
+	input_box1 = InputBox(100, 100, 140, 32)
+	input_box2 = InputBox(100, 300, 140, 32)
+	input_boxes = [input_box1, input_box2]
 
-	# Put Text On The Background, Centered
-	if pygame.font:
-		font = pygame.font.Font(None, 36)
-		text = font.render("Pummel The Chimp, And Win $$$", 1, (10, 10, 10))
-		textpos = text.get_rect(centerx=background.get_width()/2)
-		background.blit(text, textpos)
-
-	# Display The Background
-	screen.blit(background, (0, 0))
-	pygame.display.flip()
-
-	# Prepare Game Objects
 	clock = pygame.time.Clock()
-	# chimp = Chimp()
-	# fist = Fist()
-	# allsprites = pygame.sprite.RenderPlain((fist, chimp))
-
-	# Main Loop
+	
 	going = True
 	while going:
 		clock.tick(60)
-
-		# Handle Input Events
-		# for event in pygame.event.get():
-		#     if event.type == QUIT:
-		#         going = False
-		#     elif event.type == KEYDOWN and event.key == K_ESCAPE:
-		#         going = False
-		#     elif event.type == MOUSEBUTTONDOWN:
-		#         if fist.punch(chimp):
-		#             punch_sound.play()  # punch
-		#             chimp.punched()
-		#         else:
-		#             whiff_sound.play()  # miss
-		#     elif event.type == MOUSEBUTTONUP:
-		#         fist.unpunch()
-
-
-		# Draw Everything
-		screen.blit(background, (0, 0))
-		#allsprites.draw(screen)
+		redrawWindow()
+		pygame.display.update()
 		pygame.display.flip()
 		for event in pygame.event.get():
+			pos=pygame.mouse.get_pos()
 			if event.type == pygame.QUIT:
 				pygame.quit(); sys.exit();pygame.display.quit()
-				exit()
-				#main = False
-
+				quit()
+			flag=[]
 			pressed = pygame.key.get_pressed()
-			if pressed[pygame.K_UP]:
-				vx+=10
-			if pressed[pygame.K_DOWN]:
-				vx-=10
-			if pressed[pygame.K_a]:
-				vx=80
-			if pressed[pygame.K_d]:
-				vx=80
-			if pressed[pygame.K_w]:  
-				vy=80
-			if pressed[pygame.K_s]:  
-				vy=80
-		   
+			if event.type == pygame.MOUSEBUTTONDOWN:
+				if wButton.isOver(pos):
+					flag+=["w"]
+				if sButton.isOver(pos):
+					flag+=["s"]
+				if aButton.isOver(pos):
+					flag+=["a"]
+				if dButton.isOver(pos):
+					flag+=["d"]
+				if upButton.isOver(pos):
+					flag+=["up"]
+				if downButton.isOver(pos):
+					flag+=["down"]
 
-			send_command(pub, True, 1, vx, vy, vw, power, False)
+			if pressed[pygame.K_UP] and (pressed[pygame.K_w] or pressed[pygame.K_s]) and "up" in flag and "w" in flag and "s" in flag: 
+				s+=0.3
+				
+			if pressed[pygame.K_DOWN] and (pressed[pygame.K_w] or pressed[pygame.K_s]) and "down" in flag and "w" in flag and "s" in flag:
+				s+=0.3
+				
+			if pressed[pygame.K_w] and pressed[pygame.K_d] and "w" in flag and "d" in flag:
+				print("1")
+				vy=0.4
+				vx=0.4
+			elif pressed[pygame.K_w] and pressed[pygame.K_a] and "w" in flag and "a" in flag:
+				print "2"
+				vy=0.4
+				vx=-0.4
+			elif pressed[pygame.K_w] or flag==["w"]:
+				print "3"
+				vx=0
+				vy=0.5
+			elif pressed[pygame.K_d] or flag==["d"]:
+				print "3"
+				vx=0.5
+				vy=0
+			elif pressed[pygame.K_a] or flag==["a"]:
+				print "3"
+				vx=-0.5
+				vy=0
+			elif pressed[pygame.K_s] and pressed[pygame.K_d] and "s" in flag and "d" in flag:
+				print "4"
+				vx=0.4
+				vy=-0.4
+			elif pressed[pygame.K_s] and pressed[pygame.K_a] and "s" in flag and "a" in flag:
+				print "5"
+				vx=-0.4
+				vy=-0.4
+			elif pressed[pygame.K_s] and flag==["s"]:
+				print "6"
+				vx=0
+				vy=-0.5
+
+			send_command(False, 0, vx,vy, vw, 0,0,s,False)
 
 			
 	pygame.display.quit()
 	pygame.quit()
-	#exit()
 
 if __name__ == '__main__':
 	main()
