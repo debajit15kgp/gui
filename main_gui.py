@@ -70,10 +70,15 @@ def send_command(team, bot_id, v_x,v_y, v_w, kick_power, dribble,speed,chip_powe
 	# v_x=0
 	# #v_y=v*math.cos(fa-angle)/math.cos(fa)
 	# v_y=v
-	if(v_x!=0):
+	if(v_x>0):
 		v_x+=speed
-	if(v_y!=0):
+	elif(v_x<0):
+		v_x-=speed
+
+	if(v_y>0):
 		v_y+=speed
+	elif(v_y<0):
+		v_y-=speed
 
 	gr_command.id          = bot_id
 	gr_command.wheelsspeed = 0
@@ -194,11 +199,8 @@ def main():
 	start_time = 1.0*start_time.secs + 1.0*start_time.nsecs/pow(10,9)   
 	
 	power=False
-	vx=0.5
-	vy=0
-	vw=0
+	
 	s=0
-
 	input_box1 = InputBox(100, 100, 140, 32)
 	input_box2 = InputBox(100, 300, 140, 32)
 	input_boxes = [input_box1, input_box2]
@@ -212,6 +214,10 @@ def main():
 		pygame.display.update()
 		pygame.display.flip()
 		for event in pygame.event.get():
+			vx=0
+			vy=0
+			vw=0
+
 			pos=pygame.mouse.get_pos()
 			if event.type == pygame.QUIT:
 				pygame.quit(); sys.exit();pygame.display.quit()
@@ -232,17 +238,19 @@ def main():
 				if downButton.isOver(pos):
 					flag+=["down"]
 
-			if pressed[pygame.K_UP] and (pressed[pygame.K_w] or pressed[pygame.K_s]) and "up" in flag and "w" in flag and "s" in flag: 
-				s+=0.3
-				
-			if pressed[pygame.K_DOWN] and (pressed[pygame.K_w] or pressed[pygame.K_s]) and "down" in flag and "w" in flag and "s" in flag:
-				s+=0.3
-				
-			if pressed[pygame.K_w] and pressed[pygame.K_d] and "w" in flag and "d" in flag:
+			if pressed[pygame.K_UP]: 
+					s+=0.3
+			if pressed[pygame.K_DOWN] :
+					s=max(0,s-0.3)
+			if pressed[pygame.K_LEFT]:
+				vw+=1
+			if pressed[pygame.K_RIGHT]:
+				vw-=1
+			if pressed[pygame.K_w] and pressed[pygame.K_d] or ( "w" in flag and "d" in flag):
 				print("1")
 				vy=0.4
 				vx=0.4
-			elif pressed[pygame.K_w] and pressed[pygame.K_a] and "w" in flag and "a" in flag:
+			elif pressed[pygame.K_w] and pressed[pygame.K_a] or ("w" in flag and "a" in flag):
 				print "2"
 				vy=0.4
 				vx=-0.4
@@ -258,20 +266,20 @@ def main():
 				print "3"
 				vx=-0.5
 				vy=0
-			elif pressed[pygame.K_s] and pressed[pygame.K_d] and "s" in flag and "d" in flag:
+			elif pressed[pygame.K_s] and pressed[pygame.K_d] or  ("s" in flag and "d" in flag):
 				print "4"
 				vx=0.4
 				vy=-0.4
-			elif pressed[pygame.K_s] and pressed[pygame.K_a] and "s" in flag and "a" in flag:
+			elif pressed[pygame.K_s] and pressed[pygame.K_a] or ("s" in flag and "a" in flag):
 				print "5"
 				vx=-0.4
 				vy=-0.4
-			elif pressed[pygame.K_s] and flag==["s"]:
+			elif pressed[pygame.K_s] or flag==["s"]:
 				print "6"
 				vx=0
 				vy=-0.5
 
-			send_command(False, 0, vx,vy, vw, 0,0,s,False)
+			send_command(False, 0, vy,vx, vw, 0,0,s,False)
 
 			
 	pygame.display.quit()
